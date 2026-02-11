@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme {
+  /* Professional Investment App Color Palette */
+  --color-primary: #00C805;
+  /* Bright Green for gains */
+  --color-danger: #FF3B30;
+  /* Red for losses */
+  --color-secondary: #1F2937;
+  /* Professional Dark Gray/Black */
+  --color-accent: #FFB800;
+  /* Gold accent */
+  
+  /* Light Mode Colors (Default) */
+  --color-dark: #FFFFFF;
+  /* White background */
+  --color-darker: #F9FAFB;
+  /* Light Gray background */
+  --color-card: #FFFFFF;
+  /* Card background - White */
+  --color-card-hover: #F3F4F6;
+  /* Hover state */
+  --color-text-main: #000000;
+  /* Pure Black for main text */
+  --color-text-muted: #4B5563;
+  /* Dark Gray for muted text */
+  --color-text-dimmed: #6B7280;
+  /* Medium Gray for dimmed text */
+  --color-border: #E5E7EB;
+  /* Light border */
+}
+
+@layer base {
+  body {
+    @apply bg-dark text-text-main antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  * {
+    @apply border-border;
+  }
+}
+
+/* Dark Mode Colors - Must be outside @layer base */
+.dark {
+  --color-dark: #0A0E27;
+  /* Deep Navy background */
+  --color-darker: #060918;
+  /* Darker Navy */
+  --color-card: #131722;
+  /* Card background - Charcoal */
+  --color-card-hover: #1C2030;
+  /* Hover state */
+  --color-text-main: #FFFFFF;
+  /* Pure White for main text in dark mode */
+  --color-text-muted: #E5E7EB;
+  /* Very Light Gray for muted text */
+  --color-text-dimmed: #D1D5DB;
+  /* Light Gray for dimmed text */
+  --color-border: #2A2E39;
+  /* Subtle border */
+  --color-secondary: #9CA3AF;
+  /* Light gray for dark mode - better contrast */
+}
+
+@layer utilities {
+  .gain {
+    @apply text-primary;
+  }
+  
+  .loss {
+    @apply text-danger;
+  }
+  
+  .neutral {
+    @apply text-text-muted;
+  }
+  
+  /* Stock ticker animation */
+  @keyframes slideUp {
+    0% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    10% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    90% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+  }
+  
+  .ticker-animate {
+    animation: slideUp 10s ease-in-out infinite;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* Custom scrollbar for professional look */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #2A2E39;
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #3A3E49;
+  }
+}
