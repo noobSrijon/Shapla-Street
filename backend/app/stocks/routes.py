@@ -4,6 +4,9 @@ from datetime import datetime, timedelta, timezone
 import os
 import pandas as pd
 from .ml_logic import get_lstm_prediction
+from .scraper import scrape_latest_prices
+from .scraper import scrape_company_details
+from .scraper import scrape_historical_data, scrape_current_price
 
 stocks_bp = Blueprint('stocks', __name__)
 
@@ -37,7 +40,7 @@ def get_stocks():
         "pages": (total + limit - 1) // limit
     })
 
-from .scraper import scrape_company_details
+
 
 @stocks_bp.route('/<symbol>', methods=['GET'])
 def get_stock(symbol):
@@ -57,18 +60,13 @@ def get_stock(symbol):
              except:
                 pass
 
-    # Check if we have details or if they are stale (older than 24 hours)
-    # Basic stock data is updated frequently, but "details" like Market Cap might be new.
-    # Let's check for a key like "market_cap"
-    
+   
     needs_update = False
     if 'market_cap' not in stock:
-        # Check if we rely on scrape_company_details for basic open price too?
-        # If open is missing, let's try to update
         if 'open' not in stock:
              needs_update = True
         else:
-             needs_update = True # market cap missing
+             needs_update = True 
     elif 'details_updated_at' in stock:
         last_update = stock['details_updated_at']
         if isinstance(last_update, str): # legacy check
@@ -85,8 +83,6 @@ def get_stock(symbol):
         needs_update = True
         
     if needs_update:
-        # Scrape details
-        # Blocking call for simplicity, or could trigger async task. 
         details = scrape_company_details(symbol.upper())
         if details:
             details['details_updated_at'] = datetime.utcnow()
@@ -96,7 +92,6 @@ def get_stock(symbol):
             )
             stock.update(details) 
             
-            # Re-serialize new dates if any
             if 'details_updated_at' in stock and not isinstance(stock['details_updated_at'], str):
                 stock['details_updated_at'] = stock['details_updated_at'].isoformat()
             if 'last_updated' in stock and not isinstance(stock['last_updated'], str):
@@ -104,7 +99,6 @@ def get_stock(symbol):
             
     return jsonify(stock)
 
-from .scraper import scrape_historical_data, scrape_current_price
 
 @stocks_bp.route('/<symbol>/history', methods=['GET'])
 def get_stock_history(symbol):
@@ -173,10 +167,7 @@ def get_stock_history(symbol):
     
 @stocks_bp.route('/<symbol>/prediction', methods=['GET'])
 def get_prediction(symbol):
-    """
-    Get LSTM prediction for a specific stock.
-    Returns historical actuals and future predictions.
-    """
+  
     try:
         csv_path = os.path.join(os.path.dirname(__file__), 'DSE_Data.csv')
         
@@ -240,7 +231,6 @@ def get_prediction(symbol):
 
 @stocks_bp.route('/indices', methods=['GET'])
 def get_indices():
-    """Get live market indices from DSE homepage"""
     try:
         from .scraper import scrape_market_indices
         
@@ -276,13 +266,11 @@ def get_indices():
         print(f"Error in get_indices: {e}")
         return jsonify([])
 
-from .scraper import scrape_latest_prices
+
 
 @stocks_bp.route('/latest-prices', methods=['GET'])
 def get_latest_prices():
-    """Get latest prices from DSE for all stocks"""
     try:
-        # Try to get from cache first (stored in DB with short TTL)
         cache = mongo.db.latest_prices_cache.find_one({"type": "all_prices"})
     
         if cache and 'updated_at' in cache:
@@ -314,3 +302,8 @@ def get_latest_prices():
     except Exception as e:
         print(f"Error getting latest prices: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+@stocks_bp.route('/keep-alive', methods=['GET'])
+def keep_alive():
+    return jsonify({"message": "Server is alive"})
